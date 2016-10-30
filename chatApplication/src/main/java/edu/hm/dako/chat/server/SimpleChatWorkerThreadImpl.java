@@ -345,7 +345,7 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
 
 	@Override
 	protected void handleIncomingMessage() throws Exception {
-		if (checkIfClientIsDeletable() == true) {
+		if (checkIfClientIsDeletable()) {
 			return;
 		}
 
