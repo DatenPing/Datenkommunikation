@@ -181,18 +181,22 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
 	protected void chatMessageRequestAction(ChatPDU receivedPdu) {
 
 		ClientListEntry client = null;
-		clients.setRequestStartTime(receivedPdu.getUserName(), startTime);
-		clients.incrNumberOfReceivedChatMessages(receivedPdu.getUserName());
+		String clientName = receivedPdu.getUserName();
+
+		clients.setRequestStartTime(clientName, startTime);
+		// TODO Ben: Möglichkeit zu tracken wieviele messages ein client erhalten hat
+		// Hier Anzahl für den angebundenen Client erhöt
+		clients.incrNumberOfReceivedChatMessages(clientName);
 		serverGuiInterface.incrNumberOfRequests();
-		log.debug("Chat-Message-Request-PDU von " + receivedPdu.getUserName()
+		log.debug("Chat-Message-Request-PDU von " + clientName
 				+ " mit Sequenznummer " + receivedPdu.getSequenceNumber() + " empfangen");
 
-		if (!clients.existsClient(receivedPdu.getUserName())) {
-			log.debug("User nicht in Clientliste: " + receivedPdu.getUserName());
+		if (!clients.existsClient(clientName)) {
+			log.debug("User nicht in Clientliste: " + clientName);
 		} else {
 			// Liste der betroffenen Clients ermitteln
 			Vector<String> sendList = clients.getClientNameList();
-			ChatPDU pdu = ChatPDU.createChatMessageEventPdu(userName, receivedPdu);
+			ChatPDU pdu = ChatPDU.createChatMessageEventPdu(this.userName, receivedPdu);
 
 			// Event an Clients senden
 			for (String s : new Vector<String>(sendList)) {
@@ -205,7 +209,7 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
 						log.debug("Chat-Event-PDU an " + client.getUserName() + " gesendet");
 						clients.incrNumberOfSentChatEvents(client.getUserName());
 						eventCounter.getAndIncrement();
-						log.debug(userName + ": EventCounter erhoeht = " + eventCounter.get()
+						log.debug(this.userName + ": EventCounter erhoeht = " + eventCounter.get()
 								+ ", Aktueller ConfirmCounter = " + confirmCounter.get()
 								+ ", Anzahl gesendeter ChatMessages von dem Client = "
 								+ receivedPdu.getSequenceNumber());
@@ -217,10 +221,10 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
 				}
 			}
 
-			client = clients.getClient(receivedPdu.getUserName());
+			client = clients.getClient(clientName);
 			if (client != null) {
 				ChatPDU responsePdu = ChatPDU.createChatMessageResponsePdu(
-						receivedPdu.getUserName(), 0, 0, 0, 0,
+						clientName, 0, 0, 0, 0,
 						client.getNumberOfReceivedChatMessages(), receivedPdu.getClientThreadName(),
 						(System.nanoTime() - client.getStartTime()));
 
@@ -234,7 +238,7 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
 				try {
 					client.getConnection().send(responsePdu);
 					log.debug(
-							"Chat-Message-Response-PDU an " + receivedPdu.getUserName() + " gesendet");
+							"Chat-Message-Response-PDU an " + clientName + " gesendet");
 				} catch (Exception e) {
 					log.debug("Senden einer Chat-Message-Response-PDU an " + client.getUserName()
 							+ " nicht moeglich");

@@ -1,5 +1,9 @@
 package edu.hm.dako.chat.server;
 
+import edu.hm.dako.chat.connection.ServerSocketInterface;
+
+import java.util.concurrent.ExecutorService;
+
 /**
  * <p/>
  * Advanced-Chat-Server-Implementierung Der ChatServer wird in einem eigenen
@@ -8,6 +12,16 @@ package edu.hm.dako.chat.server;
  *
  * @author Benjamin Königsberg
  */
-public class AdvancedChatServerImpl {
+public class AdvancedChatServerImpl extends SimpleChatServerImpl{
 
+    /**
+     * Konstruktor
+     *
+     * @param executorService
+     * @param socket
+     * @param serverGuiInterface
+     */
+    public AdvancedChatServerImpl(ExecutorService executorService, ServerSocketInterface socket, ChatServerGuiInterface serverGuiInterface) {
+        super(executorService, socket, serverGuiInterface);
+    }
 }

@@ -9,39 +9,11 @@ import edu.hm.dako.chat.connection.Connection;
  * @author
  *
  */
-public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerThread {
+public class AdvancedMessageListenerThreadImpl extends SimpleMessageListenerThreadImpl {
+
 
     public AdvancedMessageListenerThreadImpl(ClientUserInterface userInterface, Connection con, SharedClientData sharedData) {
         super(userInterface, con, sharedData);
     }
 
-    @Override
-    protected void chatMessageResponseAction(ChatPDU receivedPdu) {
-
-    }
-
-    @Override
-    protected void chatMessageEventAction(ChatPDU receivedPdu) {
-
-    }
-
-    @Override
-    protected void loginResponseAction(ChatPDU receivedPdu) {
-
-    }
-
-    @Override
-    protected void loginEventAction(ChatPDU receivedPdu) {
-
-    }
-
-    @Override
-    protected void logoutEventAction(ChatPDU receivedPdu) {
-
-    }
-
-    @Override
-    protected void logoutResponseAction(ChatPDU receivedPdu) {
-
-    }
 }

@@ -49,6 +49,8 @@ public class SimpleChatServerImpl extends AbstractChatServer {
 		counter.confirmCounter = new AtomicInteger(0);
 	}
 
+
+
 	@Override
 	public void start() {
 		Task<Void> task = new Task<Void>() {
