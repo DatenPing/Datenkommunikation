@@ -60,8 +60,7 @@ public class SimpleChatServerImpl extends AbstractChatServer {
                 while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                     try {
                         // Auf ankommende Verbindungsaufbauwuensche warten
-                        System.out.println(
-                                "SimpleChatServer wartet auf Verbindungsanfragen von Clients...");
+                        System.out.println("ChatServer wartet auf Verbindungsanfragen von Clients...");
 
                         Connection connection = socket.accept();
                         log.debug("Neuer Verbindungsaufbauwunsch empfangen");
@@ -72,8 +71,7 @@ public class SimpleChatServerImpl extends AbstractChatServer {
                         if (socket.isClosed()) {
                             log.debug("Socket wurde geschlossen");
                         } else {
-                            log.error(
-                                    "Exception beim Entgegennehmen von Verbindungsaufbauwuenschen: " + e);
+                            log.error("Exception beim Entgegennehmen von Verbindungsaufbauwuenschen: " + e);
                             ExceptionHandler.logException(e);
                         }
                     }
