@@ -363,10 +363,9 @@ public class SharedChatClientList {
         ClientListEntry client = clients.get(userName);
         if (client != null) {
             client.setStartTime(startTime);
-            log.debug(
-                    "Startzeit fuer Benutzer " + userName + " gesetzt: " + client.getStartTime());
+            log.debug(String.format("Startzeit fuer Benutzer %s gesetzt: %d", userName, client.getStartTime()));
         } else {
-            log.debug("Startzeit fuer Benutzer konnte nicht gesetzt werden:" + userName);
+            log.debug(String.format("Startzeit fuer Benutzer konnte nicht gesetzt werden:%s", userName));
         }
     }
 
