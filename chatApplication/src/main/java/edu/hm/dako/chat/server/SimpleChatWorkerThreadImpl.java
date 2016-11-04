@@ -402,9 +402,12 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
         }
 
         // Empfangene Nachricht bearbeiten
+        handleReceivedPDU(receivedPdu);
+    }
+
+    void handleReceivedPDU(ChatPDU receivedPdu) {
         try {
             switch (receivedPdu.getPduType()) {
-
                 case LOGIN_REQUEST:
                     // Login-Request vom Client empfangen
                     loginRequestAction(receivedPdu);
@@ -414,7 +417,6 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
                     // Chat-Nachricht angekommen, an alle verteilen
                     chatMessageRequestAction(receivedPdu);
                     break;
-
                 case LOGOUT_REQUEST:
                     // Logout-Request vom Client empfangen
                     logoutRequestAction(receivedPdu);
