@@ -177,7 +177,6 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
     @Override
     protected void chatMessageRequestAction(ChatPDU receivedPdu) {
 
-        ClientListEntry client = null;
         String clientName = receivedPdu.getUserName();
 
         clients.setRequestStartTime(clientName, startTime);
@@ -195,32 +194,36 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
             ChatPDU pdu = ChatPDU.createChatMessageEventPdu(this.userName, receivedPdu);
 
             // Event an Clients senden
-            for (String s : new Vector<String>(sendList)) {
-                client = clients.getClient(s);
+            for (String s : new Vector<>(sendList)) {
+                ClientListEntry oneClient = clients.getClient(s);
                 try {
-                    if ((client != null)
-                            && (client.getStatus() != ClientConversationStatus.UNREGISTERED)) {
-                        pdu.setUserName(client.getUserName());
-                        client.getConnection().send(pdu);
-                        log.debug(String.format("Chat-Event-PDU an %s gesendet", client.getUserName()));
-                        clients.incrNumberOfSentChatEvents(client.getUserName());
+                    if ((oneClient != null)
+                            && (oneClient.getStatus() != ClientConversationStatus.UNREGISTERED)) {
+                        pdu.setUserName(oneClient.getUserName());
+
+                        // Resultiert innerhalb des MessageListenerThreadImpl in einem chatMessageEventAction() Aufruf
+                        // Weil PDU-Type = PduType.CHAT_MESSAGE_EVENT
+                        oneClient.getConnection().send(pdu);
+
+                        log.debug(String.format("Chat-Event-PDU an %s gesendet", oneClient.getUserName()));
+                        clients.incrNumberOfSentChatEvents(oneClient.getUserName());
                         eventCounter.getAndIncrement();
                         log.debug(String.format("%s: EventCounter erhoeht = %d, Aktueller ConfirmCounter = %d, " +
                                         "Anzahl gesendeter ChatMessages von dem Client = %d",
                                 this.userName, eventCounter.get(), confirmCounter.get(), receivedPdu.getSequenceNumber()));
                     }
                 } catch (Exception e) {
-                    log.debug(String.format("Senden einer Chat-Event-PDU an %s nicht moeglich", client.getUserName()));
+                    log.debug(String.format("Senden einer Chat-Event-PDU an %s nicht moeglich", oneClient.getUserName()));
                     ExceptionHandler.logException(e);
                 }
             }
 
-            client = clients.getClient(clientName);
-            if (client != null) {
+            ClientListEntry ownerClient = clients.getClient(clientName);
+            if (ownerClient != null) {
                 ChatPDU responsePdu = ChatPDU.createChatMessageResponsePdu(
                         clientName, 0, 0, 0, 0,
-                        client.getNumberOfReceivedChatMessages(), receivedPdu.getClientThreadName(),
-                        (System.nanoTime() - client.getStartTime()));
+                        ownerClient.getNumberOfReceivedChatMessages(), receivedPdu.getClientThreadName(),
+                        (System.nanoTime() - ownerClient.getStartTime()));
 
                 if (responsePdu.getServerTime() / 1000000 > 100) {
                     log.debug(String.format("%s, Benoetigte Serverzeit vor dem Senden der Response-Nachricht > 100 ms: %d ns = %d ms",
@@ -228,12 +231,14 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
                 }
 
                 try {
-                    client.getConnection().send(responsePdu);
+                    // Resultiert innerhalb des MessageListenerThreadImpl in einem chatMessageResponseAction() Aufruf
+                    // Weil PDU-Type = PduType.CHAT_MESSAGE_RESPONSE
+                    ownerClient.getConnection().send(responsePdu);
                     log.debug(
                             String.format("Chat-Message-Response-PDU an %s gesendet", clientName));
                 } catch (Exception e) {
                     log.debug(String.format("Senden einer Chat-Message-Response-PDU an %s nicht moeglich",
-                            client.getUserName()));
+                            ownerClient.getUserName()));
                     ExceptionHandler.logExceptionAndTerminate(e);
                 }
             }
