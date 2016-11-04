@@ -1,5 +1,6 @@
 package edu.hm.dako.chat.server;
 
+import edu.hm.dako.chat.connection.Connection;
 import edu.hm.dako.chat.connection.ServerSocketInterface;
 
 import java.util.concurrent.ExecutorService;
@@ -23,5 +24,10 @@ public class AdvancedChatServerImpl extends SimpleChatServerImpl{
      */
     public AdvancedChatServerImpl(ExecutorService executorService, ServerSocketInterface socket, ChatServerGuiInterface serverGuiInterface) {
         super(executorService, socket, serverGuiInterface);
+    }
+
+    @Override
+    protected AbstractWorkerThread getWorkerThreadImpl(Connection connection) {
+        return new AdvancedChatWorkerThreadImpl(connection, clients, counter, serverGuiInterface);
     }
 }
