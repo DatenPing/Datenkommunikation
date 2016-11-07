@@ -102,14 +102,11 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 	@Override
 	protected void chatMessageResponseAction(ChatPDU receivedPdu) {
 
-		log.debug("Sequenznummer der Chat-Response-PDU " + receivedPdu.getUserName() + ": "
-				+ receivedPdu.getSequenceNumber() + ", Messagecounter: "
-				+ sharedClientData.messageCounter.get());
+		log.debug(String.format("Sequenznummer der Chat-Response-PDU %s: %d, Messagecounter: %d",
+				receivedPdu.getUserName(), receivedPdu.getSequenceNumber(), sharedClientData.messageCounter.get()));
 
-		log.debug(Thread.currentThread().getName()
-				+ ", Benoetigte Serverzeit gleich nach Empfang der Response-Nachricht: "
-				+ receivedPdu.getServerTime() + " ns = " + receivedPdu.getServerTime() / 1000000
-				+ " ms");
+		log.debug(String.format("%s, Benoetigte Serverzeit gleich nach Empfang der Response-Nachricht: %d ns = %d ms",
+				Thread.currentThread().getName(), receivedPdu.getServerTime(), receivedPdu.getServerTime() / 1000000));
 
 		if (receivedPdu.getSequenceNumber() == sharedClientData.messageCounter.get()) {
 
@@ -121,12 +118,11 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 			userInterface.setLock(false);
 
 			log.debug(
-					"Chat-Response-PDU fuer Client " + receivedPdu.getUserName() + " empfangen");
+					String.format("Chat-Response-PDU fuer Client %s empfangen", receivedPdu.getUserName()));
 
 		} else {
-			log.debug("Sequenznummer der Chat-Response-PDU " + receivedPdu.getUserName()
-					+ " passt nicht: " + receivedPdu.getSequenceNumber() + "/"
-					+ sharedClientData.messageCounter.get());
+			log.debug(String.format("Sequenznummer der Chat-Response-PDU %s passt nicht: %d/%d",
+					receivedPdu.getUserName(), receivedPdu.getSequenceNumber(), sharedClientData.messageCounter.get()));
 		}
 	}
 
