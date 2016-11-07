@@ -46,7 +46,9 @@ public class AdvancedChatWorkerThreadImpl extends SimpleChatWorkerThreadImpl {
 
         switch (receivedPdu.getPduType()) {
             case CHAT_MESSAGE_EVENT_CONFIRM:
+
             case LOGIN_EVENT_CONFIRM:
+
             case LOGOUT_EVENT_CONFIRM:
 
                 break;
