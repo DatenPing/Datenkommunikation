@@ -49,6 +49,7 @@ public class AdvancedChatWorkerThreadImpl extends SimpleChatWorkerThreadImpl {
 
             case LOGIN_EVENT_CONFIRM:
                 super.loginRequestAction(receivedPdu);
+                break;
             case LOGOUT_EVENT_CONFIRM:
                 super.logoutRequestAction(receivedPdu);
                 break;
