@@ -30,11 +30,11 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 		if (receivedPdu.getErrorCode() == ChatPDU.LOGIN_ERROR) {
 
 			// Login hat nicht funktioniert
-			log.error("Login-Response-PDU fuer Client " + receivedPdu.getUserName()
-					+ " mit Login-Error empfangen");
-			userInterface.setErrorMessage(
-					"Chat-Server", "Anmelden beim Server nicht erfolgreich, Benutzer "
-							+ receivedPdu.getUserName() + " vermutlich schon angemeldet",
+			log.error(String.format("Login-Response-PDU fuer Client %s mit Login-Error empfangen",
+                    receivedPdu.getUserName()));
+			userInterface.setErrorMessage("Chat-Server",
+                    String.format("Anmelden beim Server nicht erfolgreich, Benutzer %s vermutlich schon angemeldet",
+                            receivedPdu.getUserName()),
 					receivedPdu.getErrorCode());
 			sharedClientData.status = ClientConversationStatus.UNREGISTERED;
 
@@ -50,9 +50,8 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 
 			userInterface.loginComplete();
 
-			Thread.currentThread().setName("Listener" + "-" + sharedClientData.userName);
-			log.debug(
-					"Login-Response-PDU fuer Client " + receivedPdu.getUserName() + " empfangen");
+			Thread.currentThread().setName(String.format("Listener-%s", sharedClientData.userName));
+			log.debug(String.format("Login-Response-PDU fuer Client %s empfangen", receivedPdu.getUserName()));
 		}
 	}
 
@@ -129,8 +128,7 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 	@Override
 	protected void chatMessageEventAction(ChatPDU receivedPdu) {
 
-		log.debug(
-				"Chat-Message-Event-PDU von " + receivedPdu.getEventUserName() + " empfangen");
+		log.debug(String.format("Chat-Message-Event-PDU von %s empfangen", receivedPdu.getEventUserName()));
 
 		// Eventzaehler fuer Testzwecke erhoehen
 		sharedClientData.eventCounter.getAndIncrement();

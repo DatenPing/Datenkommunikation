@@ -95,10 +95,10 @@ public class ChatPDU implements Serializable {
     numberOfRetries = 0;
   }
 
-  public ChatPDU(PduType cmd, Vector<String> clients) {
-    this.pduType = cmd;
-    this.clients = clients;
-  }
+    public ChatPDU(PduType cmd, Vector<String> clients) {
+        this.pduType = cmd;
+        this.clients = clients;
+    }
 
   public ChatPDU(PduType cmd, String message) {
     this.pduType = cmd;
