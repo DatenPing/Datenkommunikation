@@ -9,9 +9,8 @@ import org.apache.commons.logging.LogFactory;
 
 /**
  * Thread wartet auf ankommende Nachrichten vom Server und bearbeitet diese.
- * 
- * @author
  *
+ * @author
  */
 public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerThread {
 
