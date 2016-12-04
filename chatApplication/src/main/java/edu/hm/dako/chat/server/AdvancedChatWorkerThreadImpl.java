@@ -226,31 +226,39 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
 
             sendMessageEventToAllClients(receivedPdu, sendList, pdu);
 
-            ClientListEntry ownerClient = clients.getClient(clientName);
-            if (ownerClient != null) {
-                ChatPDU responsePdu = ChatPDU.createChatMessageResponsePdu(
-                        clientName, 0, 0, 0, 0,
-                        ownerClient.getNumberOfReceivedChatMessages(), receivedPdu.getClientThreadName(),
-                        (System.nanoTime() - ownerClient.getStartTime()));
+            fillWaitListWithActiveClients();
 
-                if (responsePdu.getServerTime() / 1000000 > 100) {
-                    log.debug(String.format("%s, Benoetigte Serverzeit vor dem Senden der Response-Nachricht > 100 ms: %d ns = %d ms",
-                            Thread.currentThread().getName(), responsePdu.getServerTime(), responsePdu.getServerTime() / 1000000));
-                }
-
-                try {
-                    // Resultiert innerhalb des MessageListenerThreadImpl in einem chatMessageResponseAction() Aufruf
-                    // Weil PDU-Type = PduType.CHAT_MESSAGE_RESPONSE
-                    ownerClient.getConnection().send(responsePdu);
-                    log.debug(
-                            String.format("Chat-Message-Response-PDU an %s gesendet", clientName));
-                } catch (Exception e) {
-                    log.debug(String.format("Senden einer Chat-Message-Response-PDU an %s nicht moeglich",
-                            ownerClient.getUserName()));
-                    ExceptionHandler.logExceptionAndTerminate(e);
-                }
-            }
             log.debug(String.format("Aktuelle Laenge der Clientliste: %d", clients.size()));
+        }
+    }
+
+    private void sendMessageResponsePdu(ChatPDU receivedPdu) {
+        String clientName = receivedPdu.getUserName();
+
+        ClientListEntry ownerClient = clients.getClient(clientName);
+
+        if (ownerClient != null) {
+            ChatPDU responsePdu = ChatPDU.createChatMessageResponsePdu(
+                    clientName, 0, 0, 0, 0,
+                    ownerClient.getNumberOfReceivedChatMessages(), receivedPdu.getClientThreadName(),
+                    (System.nanoTime() - ownerClient.getStartTime()));
+
+            if (responsePdu.getServerTime() / 1000000 > 100) {
+                log.debug(String.format("%s, Benoetigte Serverzeit vor dem Senden der Response-Nachricht > 100 ms: %d ns = %d ms",
+                        Thread.currentThread().getName(), responsePdu.getServerTime(), responsePdu.getServerTime() / 1000000));
+            }
+
+            try {
+                // Resultiert innerhalb des MessageListenerThreadImpl in einem chatMessageResponseAction() Aufruf
+                // Weil PDU-Type = PduType.CHAT_MESSAGE_RESPONSE
+                ownerClient.getConnection().send(responsePdu);
+                log.debug(
+                        String.format("Chat-Message-Response-PDU an %s gesendet", clientName));
+            } catch (Exception e) {
+                log.debug(String.format("Senden einer Chat-Message-Response-PDU an %s nicht moeglich",
+                        ownerClient.getUserName()));
+                ExceptionHandler.logExceptionAndTerminate(e);
+            }
         }
     }
 
@@ -493,7 +501,7 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
                 sendLoginResponsePdu(requestInProgress);
                 break;
             case CHAT_MESSAGE_REQUEST:
-                // sendMessageResponse
+                sendMessageResponsePdu(requestInProgress);
                 break;
             case LOGOUT_REQUEST:
                 // Logout Response senden

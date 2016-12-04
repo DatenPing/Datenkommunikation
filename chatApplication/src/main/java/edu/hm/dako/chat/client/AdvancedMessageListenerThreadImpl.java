@@ -92,6 +92,8 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
     @Override
     protected void logoutEventAction(ChatPDU receivedPdu) {
 
+        ChatPDU logoutConfirm = ChatPDU.createLogoutEventConfirm(receivedPdu.getUserName(), receivedPdu);
+
         // Eventzaehler fuer Testzwecke erhoehen
         sharedClientData.eventCounter.getAndIncrement();
 
@@ -99,6 +101,13 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
             handleUserListEvent(receivedPdu);
         } catch (Exception e) {
             ExceptionHandler.logException(e);
+        }
+
+        //sende EventConfirmPDU an Server
+        try {
+            connection.send(logoutConfirm);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -132,6 +141,8 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
     @Override
     protected void chatMessageEventAction(ChatPDU receivedPdu) {
 
+        ChatPDU confirmMessagePdu = ChatPDU.createChatMessageEventConfirm(receivedPdu.getUserName(), receivedPdu);
+
         log.debug(String.format("Chat-Message-Event-PDU von %s empfangen", receivedPdu.getEventUserName()));
 
         // Eventzaehler fuer Testzwecke erhoehen
@@ -141,6 +152,13 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
         // Darstellung uebergeben
         userInterface.setMessageLine(receivedPdu.getEventUserName(),
                 (String) receivedPdu.getMessage());
+
+        //sende confirmEventPdu an Server
+        try {
+            connection.send(confirmMessagePdu);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
