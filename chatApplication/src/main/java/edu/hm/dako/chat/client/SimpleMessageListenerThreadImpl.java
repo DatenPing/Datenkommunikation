@@ -154,8 +154,7 @@ public class SimpleMessageListenerThreadImpl extends AbstractMessageListenerThre
 				// Naechste ankommende Nachricht empfangen
 				log.debug("Auf die naechste Nachricht vom Server warten");
 				receivedPdu = receive();
-				log.debug("Nach receive Aufruf, ankommende PDU mit PduType = "
-						+ receivedPdu.getPduType());
+				log.debug(String.format("Nach receive Aufruf, ankommende PDU mit PduType = %s", receivedPdu.getPduType()));
 			} catch (Exception e) {
 				finished = true;
 			}

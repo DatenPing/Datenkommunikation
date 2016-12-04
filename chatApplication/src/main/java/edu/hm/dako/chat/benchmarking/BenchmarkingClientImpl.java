@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Mandl
  */
 
+import edu.hm.dako.chat.client.AdvancedMessageListenerThreadImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -128,9 +129,10 @@ public class BenchmarkingClientImpl extends AbstractChatClient
 
 		case TCPAdvancedImplementation:
 			try {
-
 				// TODO AdvancedMessageListenerThreadImpl erzeugen und starten
-
+				messageListenerThread = new AdvancedMessageListenerThreadImpl(this, connection,
+						sharedClientData);
+				messageListenerThread.start();
 			} catch (Exception e) {
 				ExceptionHandler.logException(e);
 			}
