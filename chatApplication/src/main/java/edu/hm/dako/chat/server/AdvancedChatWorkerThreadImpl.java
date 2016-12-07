@@ -142,7 +142,7 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
             log.debug(String.format("Exception Message: %s", e.getMessage()));
         }
 
-        log.debug("Login-Response-PDU an Client " + userName + " gesendet");
+        log.debug(String.format("Login-Response-PDU an Client %s gesendet", userName));
 
         // Zustand des Clients aendern
         clients.changeClientStatus(userName, ClientConversationStatus.REGISTERED);

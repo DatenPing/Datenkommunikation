@@ -135,6 +135,8 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
             log.debug(String.format("Sequenznummer der Chat-Response-PDU %s passt nicht: %d/%d",
                     receivedPdu.getUserName(), receivedPdu.getSequenceNumber(), sharedClientData.messageCounter.get()));
         }
+        System.out.printf("Confirms angekommen: %d Confirms nicht angekommen: %d%n",
+                receivedPdu.getNumberOfReceivedConfirms(), receivedPdu.getNumberOfLostConfirms());
     }
 
     @Override
