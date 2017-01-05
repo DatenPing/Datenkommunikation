@@ -10,6 +10,7 @@ import edu.hm.dako.chat.connection.EndOfFileException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Objects;
 import java.util.Vector;
 
 /**
@@ -23,7 +24,6 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
     private static Log log = LogFactory.getLog(AdvancedChatWorkerThreadImpl.class);
 
     private ChatPDU requestInProgress;
-    private Thread requestResponderThread;
 
     public AdvancedChatWorkerThreadImpl(Connection con, SharedChatClientList clients, SharedServerCounter counter, ChatServerGuiInterface serverGuiInterface) {
         super(con, clients, counter, serverGuiInterface);
@@ -64,7 +64,10 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
             try {
                 if (client != null) {
 
+                    System.out.println(Thread.currentThread().getName() + " / S-User: " + s);
+                    System.out.println(Thread.currentThread().getName() + " / LOGIN-SEND / Type: " + pdu.getPduType() + " / PDUUsername:" + pdu.getUserName() + " / PDUEventUser: " + pdu.getEventUserName());
                     client.getConnection().send(pdu);
+
                     log.debug(String.format("Login- oder Logout-Event-PDU an %s gesendet", client.getUserName()));
                     clients.incrNumberOfSentChatEvents(client.getUserName());
                     eventCounter.getAndIncrement();
@@ -126,9 +129,7 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
     }
 
     private void fillWaitListWithActiveClients() {
-        Vector<String> validClients = clients.getRegisteredClientNameList();
-        clients.getClient(userName)
-                .setWaitList(validClients);
+        clients.createWaitList(userName);
     }
 
     private void sendLoginResponsePdu(ChatPDU receivedPdu) {
@@ -136,6 +137,7 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
         ChatPDU responsePdu = ChatPDU.createLoginResponsePdu(userName, receivedPdu);
 
         try {
+            System.out.println("");
             clients.getClient(userName).getConnection().send(responsePdu);
         } catch (Exception e) {
             log.debug(String.format("Senden einer Login-Response-PDU an %s fehlgeschlagen", userName));
@@ -161,16 +163,19 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
             log.debug(String.format("User nicht in Clientliste: %s", receivedPdu.getUserName()));
         } else {
 
+            fillWaitListWithActiveClients();
+
             // Event an Client versenden
             pdu = ChatPDU.createLogoutEventPdu(userName, receivedPdu);
 
             clients.changeClientStatus(receivedPdu.getUserName(),
                     ClientConversationStatus.UNREGISTERING);
+
             sendLoginListUpdateEvent(pdu);
             serverGuiInterface.decrNumberOfLoggedInClients();
 
-            clients.changeClientStatus(receivedPdu.getUserName(),
-                    ClientConversationStatus.UNREGISTERED);
+            // Move somewhere else
+            // clients.changeClientStatus(receivedPdu.getUserName(), ClientConversationStatus.UNREGISTERED);
         }
     }
 
@@ -368,6 +373,7 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
 
         try {
             receivedPdu = (ChatPDU) connection.receive(RECEIVE_TIMEOUT);
+            System.out.println(Thread.currentThread().getName() + " / RECEIVE: " + userName + " / Type: " + receivedPdu.getPduType() + " / PDUUsername:" + receivedPdu.getUserName() + " / PDUEventUser: " + receivedPdu.getEventUserName());
             // Nachricht empfangen
             // Zeitmessung fuer Serverbearbeitungszeit starten
             startTime = System.nanoTime();
@@ -454,46 +460,33 @@ public class AdvancedChatWorkerThreadImpl extends AbstractWorkerThread {
                 logoutRequestAction(receivedPdu);
                 break;
         }
-
-
-        startResponderThread();
     }
 
-    private void startResponderThread() {
-        if (requestResponderThread != null) {
-            requestResponderThread.interrupt();
+    private static final Object MONITOR = new Object();
+    private void removeUsFromInitalRequestsWaitList(ChatPDU receivedPdu) {
+        //String eventInitiator = receivedPdu.getEventUserName();
+
+        synchronized (MONITOR) {
+        clients.deleteWaitListEntry(receivedPdu.getEventUserName(), userName);
+        System.out.printf("UserName: '%s' aus WL von (%s) entfernt, verbleibend: %d%n", userName, receivedPdu.getEventUserName(), clients.getWaitListSize(receivedPdu.getEventUserName()));
         }
 
-        requestResponderThread = new Thread(() -> {
-            boolean isRunning = true;
-            while (!isInterrupted() && isRunning) {
-
-                if (clients.getWaitListSize(userName) == 0) {
-                    finishRequestInProgress();
-                    isRunning = false;
-                }
-
+        if (userName.equals(receivedPdu.getEventUserName())) {
+            while (clients.getWaitListSize(userName) != 0) {
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(1);
                 } catch (InterruptedException e) {
-                    // Propagate the interrupt to be checkable in the while-head
-                    interrupt();
+                    throw new IllegalStateException("Unable to wait for waitlist");
                 }
             }
-        });
-        requestResponderThread.start();
-    }
-
-    private static final Object monitor = new Object();
-
-    private void removeUsFromInitalRequestsWaitList(ChatPDU receivedPdu) {
-        String eventInitiator = receivedPdu.getEventUserName();
-
-        synchronized (monitor) {
-            clients.deleteWaitListEntry(eventInitiator, userName);
-            System.out.printf("UserName: '%s' aus WL von (%s) entfernt, verbleibend: %d%n", userName, eventInitiator, clients.getWaitListSize(eventInitiator));
         }
+
+        clients.deleteWaitList(userName);
+
+        System.out.println(Thread.currentThread().getName() + " / Waitlist empty for: " + userName + " finishing request: " + requestInProgress.getPduType() + " / Pdu-User: " + requestInProgress.getUserName());
+        finishRequestInProgress();
     }
+
 
     private void finishRequestInProgress() {
         switch (requestInProgress.getPduType()) {

@@ -138,6 +138,18 @@ public abstract class AbstractChatClient implements ClientCommunication {
 			log.debug("Senden der Logout-Nachricht nicht moeglich");
 			throw new IOException();
 		}
+		// System.exit wird aufgerufen
+		waitTillLogoutFullyConfirmed();
+	}
+
+	private void waitTillLogoutFullyConfirmed() {
+		while (sharedClientData.status != ClientConversationStatus.UNREGISTERED) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				throw new IllegalStateException("Interruppted while waiting for UNREGISTERED status", e);
+			}
+		}
 	}
 
 	@Override

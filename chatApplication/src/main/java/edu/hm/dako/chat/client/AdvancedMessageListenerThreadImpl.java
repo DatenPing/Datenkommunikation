@@ -54,7 +54,9 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
     @Override
     protected void loginEventAction(ChatPDU receivedPdu) {
 
+        System.out.println(Thread.currentThread().getName() + " / RECEIVE: Type: " +receivedPdu.getPduType() + " / Username:"+receivedPdu.getUserName() +" / EventUser: " + receivedPdu.getEventUserName());
         ChatPDU confirmEventPdu = ChatPDU.createLoginEventConfirm(receivedPdu.getUserName(), receivedPdu);
+        System.out.println(Thread.currentThread().getName() + " / BUILD-Confirm: Type: " +receivedPdu.getPduType() + " / Username:"+receivedPdu.getUserName() +" / EventUser: " + receivedPdu.getEventUserName());
 
         // Eventzaehler fuer Testzwecke erhoehen
         sharedClientData.eventCounter.getAndIncrement();
@@ -86,6 +88,9 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
 
         finished = true;
         userInterface.logoutComplete();
+
+        // We are fully unregistered
+        sharedClientData.status = ClientConversationStatus.UNREGISTERED;
     }
 
     @Override
@@ -135,8 +140,8 @@ public class AdvancedMessageListenerThreadImpl extends AbstractMessageListenerTh
             log.debug(String.format("Sequenznummer der Chat-Response-PDU %s passt nicht: %d/%d",
                     receivedPdu.getUserName(), receivedPdu.getSequenceNumber(), sharedClientData.messageCounter.get()));
         }
-        System.out.printf("Confirms angekommen: %d Confirms nicht angekommen: %d%n",
-                receivedPdu.getNumberOfReceivedConfirms(), receivedPdu.getNumberOfLostConfirms());
+        //System.out.printf("Confirms angekommen: %d Confirms nicht angekommen: %d%n",
+        // receivedPdu.getNumberOfReceivedConfirms(), receivedPdu.getNumberOfLostConfirms());
     }
 
     @Override

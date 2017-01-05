@@ -105,7 +105,6 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
             pdu = ChatPDU.createLoginEventPdu(userName, receivedPdu);
             sendLoginListUpdateEvent(pdu);
 
-            //TODO: warten bis alle geantwortet haben...
             // Login Response senden
             ChatPDU responsePdu = ChatPDU.createLoginResponsePdu(userName, receivedPdu);
 
@@ -177,7 +176,6 @@ public class SimpleChatWorkerThreadImpl extends AbstractWorkerThread {
         String clientName = receivedPdu.getUserName();
 
         clients.setRequestStartTime(clientName, startTime);
-        // TODO Ben: Möglichkeit zu tracken wieviele messages ein client erhalten hat
         // Hier Anzahl für den angebundenen Client erhöt
         clients.incrNumberOfReceivedChatMessages(clientName);
         serverGuiInterface.incrNumberOfRequests();
